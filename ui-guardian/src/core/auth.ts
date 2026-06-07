@@ -1,6 +1,8 @@
 import type { Browser, BrowserContext, Page } from 'playwright';
 import type { AuthConfig, AuthResult } from '../config/types.js';
 
+type RequiredAuthConfig = Required<Pick<AuthConfig, 'loginUrl' | 'username' | 'password' | 'usernameSelector' | 'passwordSelector' | 'submitSelector'>> & Omit<AuthConfig, 'loginUrl' | 'username' | 'password' | 'usernameSelector' | 'passwordSelector' | 'submitSelector'>;
+
 export class AuthError extends Error {
   constructor(message: string) {
     super(message);
@@ -8,7 +10,7 @@ export class AuthError extends Error {
   }
 }
 
-export async function authenticate(browser: Browser, config: AuthConfig): Promise<AuthResult> {
+export async function authenticate(browser: Browser, config: RequiredAuthConfig): Promise<AuthResult> {
   const timeout = config.timeout ?? 30000;
   const context = await browser.newContext();
   const page = await context.newPage();

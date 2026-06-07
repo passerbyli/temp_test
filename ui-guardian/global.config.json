@@ -1,0 +1,40 @@
+{
+  "auth": {
+    "skipAuth":true,
+    "loginUrl": "https://example.com/login",
+    "username": "admin",
+    "password": "your-password",
+    "usernameSelector": "#username",
+    "passwordSelector": "#password",
+    "submitSelector": "#login-btn",
+    "successWait": {
+      "type": "url",
+      "value": "/dashboard"
+    },
+    "timeout": 30000
+  },
+  "viewports": [
+    {
+      "width": 1920,
+      "height": 1080,
+      "label": "desktop"
+    }
+  ],
+  "capture": {
+    "mode": "fullPage",
+    "scrollStep": 800,
+    "waitForNetworkIdle": true,
+    "pageLoadTimeout": 60000,
+    "screenshotDelay": 5000
+  },
+  "diff": {
+    "threshold": 0.01,
+    "includeAA": false
+  },
+  "ignoreSelectors": [
+    ".cookie-banner",
+    ".timestamp",
+    ".ad-container"
+  ],
+  "outputDir": "output/reports"
+}

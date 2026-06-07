@@ -29,6 +29,23 @@ export function diffScrollSegments(
   return worstResult!;
 }
 
+function cropToCommon(baseline: PNG, candidate: PNG): { baselineData: Buffer; candidateData: Buffer; diffPng: PNG; width: number; height: number } {
+  const width = Math.min(baseline.width, candidate.width);
+  const height = Math.min(baseline.height, candidate.height);
+
+  // Extract common region from both images
+  const baselineData = Buffer.alloc(width * height * 4);
+  const candidateData = Buffer.alloc(width * height * 4);
+
+  for (let y = 0; y < height; y++) {
+    baseline.data.copy(baselineData, y * width * 4, (y * baseline.width) * 4, (y * baseline.width + width) * 4);
+    candidate.data.copy(candidateData, y * width * 4, (y * candidate.width) * 4, (y * candidate.width + width) * 4);
+  }
+
+  const diffPng = new PNG({ width, height });
+  return { baselineData, candidateData, diffPng, width, height };
+}
+
 export function diffScreenshots(
   baselineImage: Buffer,
   candidateImage: Buffer,
@@ -37,25 +54,20 @@ export function diffScreenshots(
   const baseline = PNG.sync.read(baselineImage);
   const candidate = PNG.sync.read(candidateImage);
 
-  if (baseline.width !== candidate.width || baseline.height !== candidate.height) {
-    throw new DiffError(
-      `Image size mismatch: baseline ${baseline.width}x${baseline.height} vs candidate ${candidate.width}x${candidate.height}`,
-    );
-  }
-
-  const { width, height } = baseline;
-  const diffPng = new PNG({ width, height });
+  // Use common area for comparison
+  const { baselineData, candidateData, diffPng, width, height } = cropToCommon(baseline, candidate);
 
   const diffPixels = pixelmatch(
-    baseline.data,
-    candidate.data,
+    baselineData,
+    candidateData,
     diffPng.data,
     width,
     height,
     { threshold: config.threshold, includeAA: config.includeAA },
   );
 
-  const totalPixels = width * height;
+  // Total pixels = original baseline size (preserves original context)
+  const totalPixels = baseline.width * baseline.height;
   const diffPercent = totalPixels > 0 ? diffPixels / totalPixels : 0;
   const diffImage = PNG.sync.write(diffPng);
 

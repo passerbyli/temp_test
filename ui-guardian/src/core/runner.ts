@@ -42,9 +42,13 @@ export async function runAll(
   // Create output dir
   const outputDir = createOutputDir(globalConfig.outputDir ?? 'output/reports');
 
-  // Authenticate
-  const authResult = await authenticate(browser, globalConfig.auth);
-  const storageState = authResult.storageState;
+  // Authenticate (skip if configured)
+  let authResult: Awaited<ReturnType<typeof authenticate>> | null = null;
+  let storageState: Awaited<ReturnType<import('playwright').BrowserContext['storageState']>> | undefined;
+  if (!globalConfig.auth.skipAuth) {
+    authResult = await authenticate(browser, globalConfig.auth as Parameters<typeof authenticate>[1]);
+    storageState = authResult.storageState;
+  }
 
   const startTime = Date.now();
   const allPageResults: PageResult[] = [];
@@ -71,7 +75,10 @@ export async function runAll(
           baseline: { url: resolved.baselineUrl, screenshotPath: null, screenshotMeta: null, anomalies: { console: [], network: [], errors: [] } },
           candidate: { url: resolved.candidateUrl, screenshotPath: null, screenshotMeta: null, anomalies: { console: [], network: [], errors: [] } },
           diff: null,
-          config: { mainRegionSelector: resolved.mainRegionSelector, mainRegionIndex: resolved.mainRegionIndex, ignoreSelectors: resolved.ignoreSelectors },
+          config: {
+            baseline: { mainRegionSelector: resolved.baselineConfig.mainRegionSelector, mainRegionIndex: resolved.baselineConfig.mainRegionIndex, ignoreSelectors: resolved.baselineConfig.ignoreSelectors },
+            candidate: { mainRegionSelector: resolved.candidateConfig.mainRegionSelector, mainRegionIndex: resolved.candidateConfig.mainRegionIndex, ignoreSelectors: resolved.candidateConfig.ignoreSelectors },
+          },
           status: 'error',
           error: e instanceof Error ? e.message : String(e),
           duration: 0,
@@ -86,7 +93,7 @@ export async function runAll(
     }
   }
 
-  await authResult.context.close();
+  await authResult?.context.close();
 
   const duration = Date.now() - startTime;
   const passed = allPageResults.filter(r => r.status === 'passed').length;

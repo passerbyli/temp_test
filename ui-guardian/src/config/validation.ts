@@ -12,7 +12,7 @@ function isValidUrl(url: string): boolean {
 export function validateGlobalConfig(config: GlobalConfig): ValidationResult {
   const errors: string[] = [];
   if (!config.auth) errors.push('auth is required');
-  else {
+  else if (!config.auth.skipAuth) {
     if (!config.auth.loginUrl) errors.push('auth.loginUrl is required');
     else if (!isValidUrl(config.auth.loginUrl)) errors.push('auth.loginUrl must be a valid URL');
     if (!config.auth.username) errors.push('auth.username is required');

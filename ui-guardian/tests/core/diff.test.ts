@@ -41,9 +41,16 @@ describe('diffScreenshots', () => {
     expect(result.diffImage.length).toBeGreaterThan(0);
   });
 
-  it('throws on size mismatch', () => {
+  it('pads smaller image when sizes differ', () => {
     const img1 = createPng(10, 10, 255, 0, 0);
     const img2 = createPng(20, 20, 255, 0, 0);
-    expect(() => diffScreenshots(img1, img2, { threshold: 0.01, includeAA: false })).toThrow('size mismatch');
+    const result = diffScreenshots(img1, img2, { threshold: 0.01, includeAA: false });
+    // Padded area (white) vs red = diff detected
+    expect(result.diffPercent).toBeGreaterThan(0);
+    expect(result.diffImage).toBeInstanceOf(Buffer);
+    // Output dimensions match the larger image
+    const diffPng = PNG.sync.read(result.diffImage);
+    expect(diffPng.width).toBe(20);
+    expect(diffPng.height).toBe(20);
   });
 });

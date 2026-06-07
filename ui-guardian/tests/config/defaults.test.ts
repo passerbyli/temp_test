@@ -31,15 +31,43 @@ describe('mergeConfig', () => {
     const result = mergeConfig(globalConfig, pagePair);
     expect(result.viewports).toEqual([{ width: 1366, height: 768 }]);
   });
-  it('ignoreSelectors appends from pagePair', () => {
+  it('ignoreSelectors merges from global and pagePair', () => {
     const pagePair: PagePair = { name: 'Home', baseline: { url: 'https://a.com' }, candidate: { url: 'https://b.com' }, ignoreSelectors: ['.page-ad'] };
     const result = mergeConfig(globalConfig, pagePair);
-    expect(result.ignoreSelectors).toEqual(['.cookie-banner', '.page-ad']);
+    expect(result.baselineConfig.ignoreSelectors).toEqual(['.cookie-banner', '.page-ad']);
+    expect(result.candidateConfig.ignoreSelectors).toEqual(['.cookie-banner', '.page-ad']);
   });
-  it('mainRegionSelector forces region mode', () => {
-    const pagePair: PagePair = { name: 'Home', baseline: { url: 'https://a.com' }, candidate: { url: 'https://b.com' }, mainRegionSelector: '.main-content' };
+  it('side-level ignoreSelectors append after page-level', () => {
+    const pagePair: PagePair = {
+      name: 'Home',
+      baseline: { url: 'https://a.com', ignoreSelectors: ['.baseline-only'] },
+      candidate: { url: 'https://b.com' },
+      ignoreSelectors: ['.page-ad'],
+    };
     const result = mergeConfig(globalConfig, pagePair);
-    expect(result.mode).toBe('region');
+    expect(result.baselineConfig.ignoreSelectors).toEqual(['.cookie-banner', '.page-ad', '.baseline-only']);
+    expect(result.candidateConfig.ignoreSelectors).toEqual(['.cookie-banner', '.page-ad']);
+  });
+  it('mainRegionSelector on baseline/candidate forces region mode per side', () => {
+    const pagePair: PagePair = {
+      name: 'Home',
+      baseline: { url: 'https://a.com', mainRegionSelector: '.main-content' },
+      candidate: { url: 'https://b.com' },
+    };
+    const result = mergeConfig(globalConfig, pagePair);
+    expect(result.baselineConfig.mode).toBe('region');
+    expect(result.candidateConfig.mode).toBe('fullPage');
+  });
+  it('page-level mainRegionSelector applies to both sides', () => {
+    const pagePair: PagePair = {
+      name: 'Home',
+      baseline: { url: 'https://a.com' },
+      candidate: { url: 'https://b.com' },
+      mainRegionSelector: '.main-content',
+    };
+    const result = mergeConfig(globalConfig, pagePair);
+    expect(result.baselineConfig.mode).toBe('region');
+    expect(result.candidateConfig.mode).toBe('region');
   });
   it('pagePair threshold overrides global', () => {
     const pagePair: PagePair = { name: 'Home', baseline: { url: 'https://a.com' }, candidate: { url: 'https://b.com' }, threshold: 0.05 };

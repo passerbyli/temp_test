@@ -1,12 +1,13 @@
 // ===== Config Types =====
 
 export interface AuthConfig {
-  loginUrl: string;
-  username: string;
-  password: string;
-  usernameSelector: string;
-  passwordSelector: string;
-  submitSelector: string;
+  skipAuth?: boolean;
+  loginUrl?: string;
+  username?: string;
+  password?: string;
+  usernameSelector?: string;
+  passwordSelector?: string;
+  submitSelector?: string;
   successWait?: {
     type: 'url' | 'selector';
     value: string;
@@ -42,11 +43,18 @@ export interface GlobalConfig {
   outputDir?: string;
 }
 
+export interface SideConfig {
+  mainRegionSelector?: string;
+  mainRegionIndex?: number;
+  ignoreSelectors?: string[];
+  captureMode?: 'fullPage' | 'region' | 'scroll';
+}
+
 export interface PagePair {
   name: string;
   id?: string;
-  baseline: { url: string };
-  candidate: { url: string };
+  baseline: { url: string } & SideConfig;
+  candidate: { url: string } & SideConfig;
   mainRegionSelector?: string;
   mainRegionIndex?: number;
   ignoreSelectors?: string[];
@@ -115,6 +123,14 @@ export interface PageSideResult {
   screenshotPaths?: string[];
   screenshotMeta: ScreenshotMeta | null;
   anomalies: AnomalyResult;
+  textContent?: string;
+  textPositions?: { text: string; x: number; y: number; width: number; height: number }[];
+}
+
+export interface TextDiffEntry {
+  type: 'added' | 'removed' | 'unchanged';
+  value: string;
+  position?: { x: number; y: number; width: number; height: number };
 }
 
 export interface PageResult {
@@ -132,10 +148,18 @@ export interface PageResult {
     threshold: number;
   } | null;
   config: {
-    mainRegionSelector?: string;
-    mainRegionIndex?: number;
-    ignoreSelectors: string[];
+    baseline: {
+      mainRegionSelector?: string;
+      mainRegionIndex?: number;
+      ignoreSelectors: string[];
+    };
+    candidate: {
+      mainRegionSelector?: string;
+      mainRegionIndex?: number;
+      ignoreSelectors: string[];
+    };
   };
+  textDiff?: TextDiffEntry[];
   status: 'passed' | 'failed' | 'error';
   error?: string;
   duration: number;
@@ -183,16 +207,21 @@ export interface RunResult {
 
 // ===== Resolved Config (after merging) =====
 
+export interface ResolvedSideConfig {
+  mainRegionSelector?: string;
+  mainRegionIndex: number;
+  ignoreSelectors: string[];
+  mode: 'fullPage' | 'region' | 'scroll';
+}
+
 export interface ResolvedPageConfig {
   name: string;
   id: string;
   baselineUrl: string;
   candidateUrl: string;
-  mainRegionSelector?: string;
-  mainRegionIndex: number;
-  ignoreSelectors: string[];
+  baselineConfig: ResolvedSideConfig;
+  candidateConfig: ResolvedSideConfig;
   viewports: ViewportConfig[];
-  mode: 'fullPage' | 'region' | 'scroll';
   scrollStep: number;
   threshold: number;
   waitForNetworkIdle: boolean;
