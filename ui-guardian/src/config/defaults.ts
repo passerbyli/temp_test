@@ -24,9 +24,17 @@ function resolveSideConfig(
     ...(side.ignoreSelectors ?? []),
   ];
 
-  let mode: 'fullPage' | 'region' | 'scroll' = side.captureMode ?? pagePair.captureMode ?? globalCapture.mode ?? 'fullPage';
-  if (mainRegionSelector) mode = 'region';
-  else if (pagePair.scrollCapture) mode = 'scroll';
+  const explicitMode = side.captureMode ?? pagePair.captureMode ?? globalCapture.mode;
+  let mode: 'fullPage' | 'region' | 'scroll';
+  if (explicitMode) {
+    mode = explicitMode;
+  } else if (mainRegionSelector) {
+    mode = 'region';
+  } else if (pagePair.scrollCapture) {
+    mode = 'scroll';
+  } else {
+    mode = 'fullPage';
+  }
 
   return { mainRegionSelector, mainRegionIndex, ignoreSelectors, mode };
 }

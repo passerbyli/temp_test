@@ -113,6 +113,8 @@ export function annotateDiffImage(
     if (entry.type === 'unchanged' || !entry.position) continue;
     markerIndex++;
 
+    // Positions are already container-relative (converted in processPage.ts)
+    // For combined scroll images, container-relative Y directly maps to combined image Y
     const cx = entry.position.x + Math.floor(entry.position.width / 2);
     const cy = entry.position.y + Math.floor(entry.position.height / 2);
 

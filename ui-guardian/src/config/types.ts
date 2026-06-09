@@ -125,6 +125,7 @@ export interface PageSideResult {
   anomalies: AnomalyResult;
   textContent?: string;
   textPositions?: { text: string; x: number; y: number; width: number; height: number }[];
+  scrollContainerState?: { scrollTop: number; containerViewportX: number; containerViewportY: number };
 }
 
 export interface TextDiffEntry {

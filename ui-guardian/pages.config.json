@@ -1,46 +1,13 @@
 {
   "pagePairs": [
     {
-      "name": "首页",
+      "name": "表单列表",
       "baseline": {
-        "url": "http://localhost:8002/#/home",
+        "url": "http://localhost:8002/#/form-table/form-list",
         "mainRegionSelector": ".main-view"
       },
       "candidate": {
-        "url": "http://localhost:8003/#/home",
-        "mainRegionSelector": ".main-view"
-      }
-    },
-    {
-      "name": "Table表格组件(行内编辑)",
-      "baseline": {
-        "url": "http://localhost:8002/#/form-table/table-inline-edit",
-        "mainRegionSelector": ".main-view"
-      },
-      "candidate": {
-        "url": "http://localhost:8003/#/form-table/table-inline-edit",
-        "mainRegionSelector": ".main-view"
-      }
-    },
-    {
-      "name": "穿梭框",
-      "baseline": {
-        "url": "http://localhost:8002/#/tools/transfer",
-        "mainRegionSelector": ".main-view"
-      },
-      "candidate": {
-        "url": "http://localhost:8003/#/tools/transfer",
-        "mainRegionSelector": ".main-view"
-      }
-    },
-    {
-      "name": "综合表格",
-      "baseline": {
-        "url": "http://localhost:8002/#/form-table/table-classic",
-        "mainRegionSelector": ".main-view"
-      },
-      "candidate": {
-        "url": "http://localhost:8003/#/form-table/table-classic",
+        "url": "http://localhost:8003/#/form-table/form-list",
         "mainRegionSelector": ".main-view"
       }
     }

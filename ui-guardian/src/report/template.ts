@@ -484,12 +484,18 @@ function loadPage(pageId, pageName, navEl) {
 
 export function renderPageHtml(page: PageResult, _runResult: RunResult): string {
   const diffPercent = page.diff ? (page.diff.diffPercent * 100).toFixed(2) + '%' : 'N/A';
-  const baselineImg = page.baseline.screenshotPath
-    ? `<img src="../${page.baseline.screenshotPath}" alt="Baseline screenshot">`
-    : '<div class="empty-state">No screenshot captured</div>';
-  const candidateImg = page.candidate.screenshotPath
-    ? `<img src="../${page.candidate.screenshotPath}" alt="Candidate screenshot">`
-    : '<div class="empty-state">No screenshot captured</div>';
+
+  // Handle multiple screenshot segments
+  const renderScreenshots = (paths: string[] | undefined, singlePath: string | null, alt: string) => {
+    if (paths && paths.length > 1) {
+      return paths.map((p, i) => `<img src="../${p}" alt="${alt} segment ${i + 1}">`).join('');
+    }
+    const path = paths ? paths[0] : singlePath;
+    return path ? `<img src="../${path}" alt="${alt}">` : '<div class="empty-state">No screenshot captured</div>';
+  };
+
+  const baselineImg = renderScreenshots(page.baseline.screenshotPaths, page.baseline.screenshotPath, 'Baseline screenshot');
+  const candidateImg = renderScreenshots(page.candidate.screenshotPaths, page.candidate.screenshotPath, 'Candidate screenshot');
   const diffImg = page.diff
     ? `<img src="../${page.diff.diffImagePath}" alt="Diff visualization">`
     : '<div class="empty-state">No diff generated</div>';

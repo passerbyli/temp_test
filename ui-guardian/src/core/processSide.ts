@@ -57,9 +57,9 @@ export async function processSide(
   }
 
   // Extract text content and positions AFTER screenshot (same visual state)
-  const { text: textContent, positions: textPositions } = await page.evaluate((selector: string | undefined) => {
+  const { text: textContent, positions: textPositions, scrollContainerState } = await page.evaluate((selector: string | undefined) => {
     const root = selector ? document.querySelector(selector) : document.body;
-    if (!root) return { text: '', positions: [] as { text: string; x: number; y: number; width: number; height: number }[] };
+    if (!root) return { text: '', positions: [] as { text: string; x: number; y: number; width: number; height: number }[], scrollContainerState: { scrollTop: 0, containerViewportX: 0, containerViewportY: 0 } };
 
     const text = (root as HTMLElement).innerText;
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -87,7 +87,40 @@ export async function processSide(
       }
     }
 
-    return { text, positions };
+    // Find scroll container state for correct coordinate conversion
+    let scrollTop = 0;
+    let containerViewportX = 0;
+    let containerViewportY = 0;
+    if (selector) {
+      const el = document.querySelector(selector);
+      if (el) {
+        // Find the scroll container (check parent elements)
+        let scrollContainer: Element | null = null;
+        let parent = el.parentElement;
+        for (let i = 0; i < 3 && parent; i++) {
+          if (parent.scrollHeight > parent.clientHeight) {
+            scrollContainer = parent;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+        // Also check children for Element UI scrollbar
+        if (!scrollContainer) {
+          const scrollbarWrap = el.querySelector('.el-scrollbar__wrap');
+          if (scrollbarWrap && scrollbarWrap.scrollHeight > scrollbarWrap.clientHeight) {
+            scrollContainer = scrollbarWrap;
+          }
+        }
+        if (scrollContainer) {
+          scrollTop = scrollContainer.scrollTop;
+          const containerRect = scrollContainer.getBoundingClientRect();
+          containerViewportX = containerRect.left;
+          containerViewportY = containerRect.top;
+        }
+      }
+    }
+
+    return { text, positions, scrollContainerState: { scrollTop, containerViewportX, containerViewportY } };
   }, sideConfig.mainRegionSelector);
 
   // Extract ECharts chart data AFTER screenshot
@@ -106,5 +139,6 @@ export async function processSide(
     anomalies,
     textContent: normalizedText,
     textPositions,
+    scrollContainerState,
   };
 }

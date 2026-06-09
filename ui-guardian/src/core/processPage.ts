@@ -99,42 +99,54 @@ export async function processPage(
 
     // Match text diff positions using both baseline and candidate positions
     if (textDiff && (candidate.textPositions || baseline.textPositions)) {
-      // Compute baseline region origin by finding a common text node
+      // For multi-segment scroll screenshots, convert viewport-relative positions to container-relative positions
+      // This ensures markers are placed at the correct position in the combined diff image
+      const candidateScroll = candidate.scrollContainerState ?? { scrollTop: 0, containerViewportX: 0, containerViewportY: 0 };
+      const baselineScroll = baseline.scrollContainerState ?? { scrollTop: 0, containerViewportX: 0, containerViewportY: 0 };
+
+      // Use the scroll container's viewport position (captured at text extraction time)
+      // instead of page.locator().boundingBox() which reflects current scroll state
+      const originX = candidateScroll.containerViewportX;
+      const originY = candidateScroll.containerViewportY;
+
+      // Compute baseline offset by finding a common text node
       let baselineOriginX = 0;
       let baselineOriginY = 0;
       if (config.baselineConfig.mainRegionSelector && baseline.textPositions && candidate.textPositions) {
-        // Find a text that exists in both pages to compute the offset
         for (const bp of baseline.textPositions) {
           for (const cp of candidate.textPositions) {
             if (bp.text === cp.text && bp.text.length > 2) {
-              baselineOriginX = bp.x - (cp.x);
-              baselineOriginY = bp.y - (cp.y);
+              baselineOriginX = bp.x - cp.x;
+              baselineOriginY = bp.y - cp.y;
               break;
             }
           }
           if (baselineOriginX !== 0 || baselineOriginY !== 0) break;
         }
       }
+      // Add baseline container offset
+      baselineOriginX += baselineScroll.containerViewportX;
+      baselineOriginY += baselineScroll.containerViewportY;
 
-      let originX = 0;
-      let originY = 0;
-      if (config.candidateConfig.mainRegionSelector) {
-        const regionBox = await page.locator(config.candidateConfig.mainRegionSelector).nth(config.candidateConfig.mainRegionIndex).boundingBox();
-        if (regionBox) {
-          originX = regionBox.x;
-          originY = regionBox.y;
-          // Baseline origin = candidate origin + offset between pages
-          baselineOriginX += originX;
-          baselineOriginY += originY;
-        }
-      }
+      // Convert viewport-relative positions to container-relative positions
+      // containerRelativeY = viewportY - containerViewportY + scrollTop
       const candidatePos = (candidate.textPositions ?? []).map(p => ({
-        text: p.text, x: p.x, y: p.y, width: p.width, height: p.height,
+        text: p.text,
+        x: p.x - originX,
+        y: p.y - originY + candidateScroll.scrollTop,
+        width: p.width,
+        height: p.height,
       }));
       const baselinePos = (baseline.textPositions ?? []).map(p => ({
-        text: p.text, x: p.x, y: p.y, width: p.width, height: p.height,
+        text: p.text,
+        x: p.x - baselineOriginX,
+        y: p.y - baselineOriginY + baselineScroll.scrollTop,
+        width: p.width,
+        height: p.height,
       }));
-      matchTextPositions(textDiff, candidatePos, baselinePos, originX, originY, baselineOriginX, baselineOriginY);
+
+      // Pass zero origins since all adjustments are already applied
+      matchTextPositions(textDiff, candidatePos, baselinePos, 0, 0, 0, 0);
     }
 
     // Diff

@@ -1,0 +1,5 @@
+name: reconcile-specs-with-code
+type: reconcile
+status: active
+created: 2026-06-10
+description: 规范追平 - 同步像素/文本判定逻辑和滚动等待时间的文档
