@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Wiki 知识库问答</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <!-- 侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h1>📚 LLM Wiki</h1>
+        <button class="new-chat-btn" id="newChatBtn" title="新对话">+ 新对话</button>
+      </div>
+      <div class="sidebar-section">
+        <h3>快捷入口</h3>
+        <ul class="quick-links" id="quickLinks">
+          <li><a href="#" data-action="modules">📦 模块列表</a></li>
+          <li><a href="#" data-action="search-us">🔍 搜索 US</a></li>
+          <li><a href="#" data-action="search-api">🔗 搜索 API</a></li>
+          <li><a href="#" data-action="stats">📊 知识库统计</a></li>
+        </ul>
+      </div>
+      <div class="sidebar-section">
+        <h3>对话历史</h3>
+        <ul class="chat-history" id="chatHistory"></ul>
+      </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main">
+      <!-- 顶部栏 -->
+      <header class="topbar">
+        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+        <span class="topbar-title">LLM Wiki 知识库问答</span>
+      </header>
+
+      <!-- 对话区域 -->
+      <div class="chat-container" id="chatContainer">
+        <!-- 欢迎信息 -->
+        <div class="welcome" id="welcome">
+          <div class="welcome-icon">📚</div>
+          <h2>LLM Wiki 知识库助手</h2>
+          <p>基于 Agentic RAG 的多步推理问答。我可以搜索知识文章、查询 US 和 API 索引、读取详细文档。</p>
+          <div class="example-questions">
+            <button class="example-btn" data-q="知识库有哪些模块？">📦 知识库有哪些模块？</button>
+            <button class="example-btn" data-q="US-001 的需求是什么？">📋 US-001 的需求是什么？</button>
+            <button class="example-btn" data-q="用户登录相关的 API 有哪些？">🔗 用户登录相关的 API 有哪些？</button>
+            <button class="example-btn" data-q="知识库最近的统计信息">📊 知识库统计信息</button>
+          </div>
+        </div>
+
+        <!-- 消息列表 -->
+        <div class="messages" id="messages"></div>
+      </div>
+
+      <!-- 输入区域 -->
+      <div class="input-area">
+        <div class="input-wrapper">
+          <textarea
+            id="userInput"
+            placeholder="输入你的问题... (Enter 发送, Shift+Enter 换行)"
+            rows="1"
+          ></textarea>
+          <button class="send-btn" id="sendBtn" title="发送">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="input-hint">
+          Powered by Claude · Agentic RAG · <span id="connectionStatus">✅ 已连接</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

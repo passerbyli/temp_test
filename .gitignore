@@ -1,0 +1,9 @@
+# API Keys
+server/.env
+
+# Node
+server/node_modules/
+node_modules/
+
+# OS
+.DS_Store
